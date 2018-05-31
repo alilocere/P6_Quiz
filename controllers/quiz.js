@@ -179,7 +179,8 @@ exports.randomplay = (req, res, next) => {
 
         })
         .then (quiz => {
-             var score = req.session.randomPlay.length || 0;
+        
+            var score = req.session.randomPlay.length || 0;
             if(quiz=== undefined){
                 delete req.session.randomPlay;
                 res.render('quizzes/random_nomore', {score});
@@ -198,30 +199,41 @@ exports.randomplay = (req, res, next) => {
 };
 
 exports.randomcheck = (req, res, next)=> {
-    
+    var score;
     const { quiz, query } = req;
     req.session.randomPlay = req.session.randomPlay || [];
-    const answer= req.query.answer || "";
-    const result = answer.toLowerCase().trim() === req.quiz.answer.toLowerCase().trim();
+    const answer = req.query.answer || "";
+
+    const result = answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim();
+    var score = req.session.randomPlay.length || 0;
     
-    var score = req.session.randomPlay.length || [];
     if(!result){
+        score = req.session.randomPlay.length;
         delete req.session.randomPlay;
+        res.render('quizzes/random_result', {
+            answer,
+            result,
+            score
+    });
 
-        
     }
-
+    
     else{
        if (req.session.randomPlay.indexOf(req.quiz.id) === -1){
             req.session.randomPlay.push(req.quiz.id);
+            score = req.session.randomPlay.length;
+            res.render('quizzes/random_result', {
+                answer,
+                result,
+                score
+            });
             
         }
 
     }
-    score = req.session.randomPlay.length;
-    res.render('quizzes/random_result', {
-        answer,
-        result,
-        score
-    });
+    
+    
+   
+
+    
 };
