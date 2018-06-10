@@ -236,3 +236,87 @@ exports.check = (req, res, next) => {
         answer
     });
 };
+
+
+exports.randomplay = (req, res, next) => {
+     const { quiz, query } = req;
+
+    req.session.randomPlay = req.session.randomPlay ||[] ;
+   
+    const whereOp = { 'id' : { [Sequelize.Op.notIn] : req.session.randomPlay}};
+
+        return models.quiz.count ({ where: whereOp})
+
+        .then(count => {
+             
+            let indice= Math.floor(Math.random()*count);
+           
+            return models.quiz.findAll({
+                where: whereOp,
+                offset: indice,
+                limit: 1
+            })
+            .then(quizzes => {
+                return quizzes[0];
+            });
+
+        })
+        .then (quiz => {
+        
+            var score = req.session.randomPlay.length || 0;
+            if(quiz=== undefined){
+                delete req.session.randomPlay;
+                res.render('quizzes/random_nomore', {score});
+               }
+                res.render('quizzes/random_play', {
+                quiz: quiz,
+                score: score
+            });
+
+            })
+            
+           
+        
+        .catch(error => next(error));
+
+};
+
+exports.randomcheck = (req, res, next)=> {
+    var score;
+    const { quiz, query } = req;
+    req.session.randomPlay = req.session.randomPlay || [];
+    const answer = req.query.answer || "";
+
+    const result = answer.toLowerCase().trim() === quiz.answer.toLowerCase().trim();
+    var score = req.session.randomPlay.length || 0;
+    
+    if(!result){
+        score = req.session.randomPlay.length;
+        delete req.session.randomPlay;
+        res.render('quizzes/random_result', {
+            answer,
+            result,
+            score
+    });
+
+    }
+    
+    else{
+       if (req.session.randomPlay.indexOf(req.quiz.id) === -1){
+            req.session.randomPlay.push(req.quiz.id);
+            score = req.session.randomPlay.length;
+            res.render('quizzes/random_result', {
+                answer,
+                result,
+                score
+            });
+            
+        }
+
+    }
+    
+    
+   
+
+    
+};
