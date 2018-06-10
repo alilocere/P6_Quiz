@@ -5,6 +5,7 @@ module.exports = {
         return queryInterface.addColumn(
             'tips',
             'accepted',
+            
             {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
